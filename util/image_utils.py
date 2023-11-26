@@ -131,9 +131,9 @@ class ImageUtils(object):
     def has_words_paddle(self, file, start_x=0, end_x=960, start_y=0, end_y=540) -> str:
         img = cv2.imread(file)
         cropped = img[start_y:end_y,start_x:end_x] # 裁剪坐标为[y0:y1, x0:x1]
-        cv2.imwrite(file+".cat.png", cropped)
+        cv2.imwrite(file, cropped)
         time.sleep(1)
-        result = ocr.ocr(file+".cat.png", cls=True)
+        result = ocr.ocr(file, cls=True)
         print(result)
         if result:
             return result[0][0][1][0]

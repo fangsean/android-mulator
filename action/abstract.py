@@ -237,6 +237,7 @@ class AbstractAction:
                     # 点击
                     logger.info('subprocesses done at 新办必学》点击 %s for %s in %s' % (j, username, device_id))
                     adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LIEBIAO_X, CONTINUOUS_BATTLE_BUTTON_LIEBIAO_Y)
+                    adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LIEBIAO_X, CONTINUOUS_BATTLE_BUTTON_LIEBIAO_Y-20)
                     sleep(1)
                     while True:
                         adb.swipeByCoord(0, CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_Y * 2, 0, 0)
@@ -256,7 +257,7 @@ class AbstractAction:
                         adb.swipeByCoord(CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_X,
                                          CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_Y, CONTINUOUS_BATTLE_SWIPE_LIEBIAO_END_X,
                                          CONTINUOUS_BATTLE_SWIPE_LIEBIAO_END_Y)
-                        sleep(60)
+                        sleep(30)
                     logger.info('user quantity step %s for %s in %s' % (j, username, device_id))
                     user_quantity_step(username)
                     logger.info('subprocesses done at 新办必学》点击返回 %s for %s in %s' % (j, username, device_id))
