@@ -30,7 +30,9 @@ from click_positioning import CONTINUOUS_BATTLE_BUTTON_MY_X, CONTINUOUS_BATTLE_B
     CONTINUOUS_SCREENCAP_START_Y, CONTINUOUS_SCREENCAP_END_Y, CONTINUOUS_SCREENCAP_END_X, \
     CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_X, CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_Y, \
     CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_X, CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_X, \
-    CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y, CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y
+    CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y, CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y, \
+    CONTINUOUS_SCREENCAP_BUTTON_START_X, CONTINUOUS_SCREENCAP_BUTTON_END_X, CONTINUOUS_SCREENCAP_BUTTON_START_Y, \
+    CONTINUOUS_SCREENCAP_BUTTON_END_Y
 from config import *
 from util import LazyValue
 from util.adb_utils import AdbUtils
@@ -91,13 +93,13 @@ class AbstractAction:
             logger.info('subprocesses done at watch video for %s in %s' % (username, device_id))
             sleep(3)
             component = "/".join([package_name, activity])
-            adb.sendKeyEvent(POWER)
+            adb.sendKeyEvent(HOME)
             adb.startActivity(component)
             sleep(3)
             for i in range(0, 5):
                 adb.sendKeyEvent(BACK)
             adb.startActivity(component)
-            sleep(3)
+            sleep(5)
             image_utils = ImageUtils(device_id)
             image_name = image_utils.screenShot()
             image_utils.writeToFile(os.path.join(base_photops, machine), image_name)
@@ -106,10 +108,10 @@ class AbstractAction:
             sleep(1)
             logger.info('image width %s height %s' % (image.size[0], image.size[1]))
             words = image_utils.has_words(os.path.join(base_photops, machine, image_name),
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_X,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_X,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_X,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_X,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
             if "暂不同意" in words:
                 adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_AGREE_X, CONTINUOUS_BATTLE_BUTTON_AGREE_Y)
             elif "取消" in words:
@@ -194,10 +196,10 @@ class AbstractAction:
             sleep(1)
             logger.info('image width %s height %s' % (image.size[0], image.size[1]))
             words = image_utils.has_words(os.path.join(base_photops, machine, image_name),
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_X,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_X,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y,
-                                                 CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_X,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_X,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y,
+                                          CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
 
             if "取消" in words:
                 # 保存
@@ -205,8 +207,9 @@ class AbstractAction:
             # 培训考核
             logger.info('subprocesses done at 培训考核 for %s in %s' % (username, device_id))
             adb.swipeByCoord(CONTINUOUS_BATTLE_SWIPE_START_X, CONTINUOUS_BATTLE_SWIPE_START_Y, 0, 0)
+            sleep(2)
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_KAOHE_X, CONTINUOUS_BATTLE_BUTTON_INPUT_KAOHE_Y)
-
+            sleep(2)
             for i in range(0, user.stage):
                 # 向上滑动
                 adb.swipeByCoord(0, 230, 0, 100)
@@ -273,7 +276,11 @@ class AbstractAction:
                         image = image_utils.loadImage(os.path.join(base_photops, machine, image_name))
                         logger.info('底部截图 image width %s height %s' % (image.size[0], image.size[1]))
                         sleep(1)
-                        words = image_utils.has_words(os.path.join(base_photops, machine, image_name))
+                        words = image_utils.has_words(os.path.join(base_photops, machine, image_name),
+                                                      CONTINUOUS_SCREENCAP_BUTTON_START_X,
+                                                      CONTINUOUS_SCREENCAP_BUTTON_END_X,
+                                                      CONTINUOUS_SCREENCAP_BUTTON_START_Y,
+                                                      CONTINUOUS_SCREENCAP_BUTTON_END_Y)
                         if "没有更多数据了" in words:
                             break
                 logger.info('user quantity stage %s for %s in %s' % (i, username, device_id))
