@@ -28,8 +28,8 @@ Tesseract-OCR下tessdata中具备 chi_sim.traineddata [训练模型文件](https
 ###### 具体参数
 - action 启动类型
   - init 初始化部署app,创建模拟器连接
-- 虚拟机数量 num
-- 虚拟机初始端口 first
+- num 虚拟机数量 
+- first 虚拟机初始端口 
 
 
 ------
@@ -44,8 +44,8 @@ python main.py --action init --first 16384 --num 10
 ###### 具体参数
 - action 启动类型
   - run 运行操作app
-- 虚拟机数量 num
-- 虚拟机初始端口 first
+- num 虚拟机数量 
+- first 虚拟机初始端口 
 
 ---
 *** 暂不支持 host 跨主机远程 ***
