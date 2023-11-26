@@ -12,19 +12,40 @@ Tesseract-OCR下tessdata中具备 chi_sim.traineddata [训练模型文件](https
 - adb  [下载地址](https://dl.google.com/android/repository/platform-tools_r34.0.5-windows.zip)
 
 
-### 启动
+## 第一阶段
 
-#### 运行app
+#### 初始化模拟器
 
-#### 具体参数 
-- action 启动类型 
-  - init 初始化部署app 
-  - run 运行app
+- 批量启动模拟器
+  - 设置模拟器分辨率 960*540
+- 执行命令，初始化连接
+  
+  ```shell
+  
+  python main.py --action init --first 16384 --num 10
+  
+  ```
+###### 具体参数
+- action 启动类型
+  - init 初始化部署app,创建模拟器连接
 - 虚拟机数量 num
 - 虚拟机初始端口 first
 
+
+------
+## 第二阶段
+#### 运行服务，控制app
 ```shell
 
 python main.py --action init --first 16384 --num 10
 
 ```
+
+###### 具体参数
+- action 启动类型
+  - run 运行操作app
+- 虚拟机数量 num
+- 虚拟机初始端口 first
+
+---
+*** 暂不支持 host 跨主机远程 ***

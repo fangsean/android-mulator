@@ -112,6 +112,18 @@ class AbstractAction:
                                                  CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
             if "暂不同意" in words:
                 adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_AGREE_X, CONTINUOUS_BATTLE_BUTTON_AGREE_Y)
+            elif "取消" in words:
+                # 保存
+                adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_X, CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_Y)
+                sleep(1)
+                # 我的
+                logger.info('subprocesses done at 我的 for %s in %s' % (username, device_id))
+                adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_MY_X, CONTINUOUS_BATTLE_BUTTON_MY_Y)
+                sleep(1)
+                # 登出
+                logger.info('subprocesses done at 登出 for %s in %s' % (username, device_id))
+                adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LOGOUT_X, CONTINUOUS_BATTLE_BUTTON_LOGOUT_Y)
+                sleep(2)
             elif "正常经营" in words:
                 adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_AGREE_X, CONTINUOUS_BATTLE_BUTTON_AGREE_Y)
                 sleep(1)
@@ -187,7 +199,8 @@ class AbstractAction:
                                                  CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_START_Y,
                                                  CONTINUOUS_BATTLE_BUTTON_AGREE_CAT_END_Y)
 
-            if "保存" in words:
+            if "取消" in words:
+                # 保存
                 adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_X, CONTINUOUS_BATTLE_BUTTON_INPUT_SAVE_Y)
             # 培训考核
             logger.info('subprocesses done at 培训考核 for %s in %s' % (username, device_id))
