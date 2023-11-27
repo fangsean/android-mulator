@@ -6,11 +6,10 @@ from abc import ABC
 from typing import *
 
 import numpy as np
-import pandas as pd
 from airtest.core.api import *
 
 import util.multiprocessing as func
-from action.databases import user_all, user_query, user_quantity_step, user_quantity_stage, user_delete
+from .databases import user_action
 from click_positioning import CONTINUOUS_BATTLE_BUTTON_MY_X, CONTINUOUS_BATTLE_BUTTON_MY_Y, \
     CONTINUOUS_BATTLE_BUTTON_LOGIN_X, \
     CONTINUOUS_BATTLE_BUTTON_LOGIN_Y, CONTINUOUS_BATTLE_BUTTON_INPUT_USERNAME_Y, \
@@ -74,6 +73,11 @@ class AbstractAction:
 
     @staticmethod
     def run(args):
+        '''
+        {host port device_id username password}
+        :param args:
+        :return:
+        '''
         host = args['host']
         port = args['port']
         machine = host + "_" + port
@@ -81,7 +85,7 @@ class AbstractAction:
         username = args['username']
         password = args['password']
         # username
-        user = user_query(username)
+        user = user_action.user_query(username)
         if not user:
             return
         adb = AdbUtils(device_id)
@@ -89,8 +93,8 @@ class AbstractAction:
             adb.connect()
             if not adb.isInstall(package_name):
                 print('{}未安装{},无法执行'.format(device_id, package_name))
-                raise Exception('{}未安装{},无法执行'.format(device_id, package_name))
-            logger.info('subprocesses done at watch video for %s in %s' % (username, device_id))
+                raise WindowsError('{}未安装{},无法执行'.format(device_id, package_name))
+            logger.info('subprocesses done for %s in %s' % (username, device_id))
             sleep(3)
             component = "/".join([package_name, activity])
             adb.sendKeyEvent(HOME)
@@ -259,7 +263,7 @@ class AbstractAction:
                                          CONTINUOUS_BATTLE_SWIPE_LIEBIAO_END_Y)
                         sleep(30)
                     logger.info('user quantity step %s for %s in %s' % (j, username, device_id))
-                    user_quantity_step(username)
+                    user_action.user_quantity_step(username)
                     logger.info('subprocesses done at 新办必学》点击返回 %s for %s in %s' % (j, username, device_id))
                     adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_BACK_X, CONTINUOUS_BATTLE_BUTTON_BACK_Y)
                     sleep(1)
@@ -285,10 +289,10 @@ class AbstractAction:
                         if "没有更多数据了" in words:
                             break
                 logger.info('user quantity stage %s for %s in %s' % (i, username, device_id))
-                user_quantity_stage(username)
+                user_action.user_quantity_stage(username)
                 adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_BACK_X, CONTINUOUS_BATTLE_BUTTON_BACK_Y)
                 sleep(1)
-            user_delete(username)
+            user_action.user_delete(username)
         except Exception as ex:
             logger.error('subprocesses done for run for %s' % device_id)
             logger.error(str(ex))
@@ -337,16 +341,17 @@ class RunAction(AbstractAction, ABC):
         self.host = host
         self.num = num
         self.first = first
-        self.handle = LazyValue(self.locate_handle)
+        self.handle = LazyValue(self.locate_handle_pull)
 
     def locate_handle(self):
         """
+        push模式
         Locate the simulator handle, used for screenshot capturing and message sending
 
         :return: The handle of the simulator, if not found, returns 0
         """
-        from collections import deque, defaultdict
-        users = [_user.dict() for _user in user_all()]
+        from collections import defaultdict
+        users = [_user.dict() for _user in user_action.user_all()]
         ports = self.get_ports().tolist()
         size = len(ports)
         for index, user in enumerate(users):
@@ -365,7 +370,7 @@ class RunAction(AbstractAction, ABC):
         while True:
             data_groups = func.multiprocessing_group(
                 items=data_groups,
-                function=collect,
+                function=group,
                 chunks=1,
             )
             if len(data_groups) == 0:
@@ -375,7 +380,76 @@ class RunAction(AbstractAction, ABC):
         logger.info('All subprocesses done for run')
 
 
-def collect(index, items, return_dict):
+    def locate_handle_pull(self):
+        """
+        pull模式
+        Locate the simulator handle, used for screenshot capturing and message sending
+
+        :return: The handle of the simulator, if not found, returns 0
+        """
+        ports = self.get_ports().tolist()
+        logger.info('All subprocesses machine num is %s' % len(ports))
+        machine_groups = [{"device_id": self.host + ':' + str(port), "host": self.host, "port": str(port)}
+                          for port in ports]
+
+        if len(machine_groups) == 0:
+            logger.warning('All subprocesses not done for run')
+            return
+
+        # workers = [loop_executor.create_event_loop_thread(RunAction.run, machine) for machine in machine_groups]
+        # loop_executor.exetute(*workers, wait=True)
+
+        data_groups = func.multiprocessing_collect(
+            items=machine_groups,
+            function=collect,
+            chunks=1,
+        )
+
+        auto_setup(__file__)
+        logger.info('All subprocesses done for run')
+
+
+    @staticmethod
+    def run(machine):
+        '''
+        :param machine:
+        {"device_id":   "host":  , "port":  }
+        :return:
+        '''
+        host = machine['host']
+        port = machine['port']
+        device_id = machine['device_id']
+
+        local_items = []
+        logger.warning("dummy function to return values")
+        logger.error(local_items)
+        while True:
+            item = user_action.get_task()
+            if not item:
+                break
+            print(item.dict())
+            try:
+                username = item.username
+                password = item.password
+                args = {'host': host, 'port': port, 'device_id': device_id, 'username': username, 'password': password}
+                AbstractAction.run(args)
+            except WindowsError as we:
+                logger.error('subprocesses done error for %s' % json.dumps(machine))
+                logger.error(we)
+                return
+            except Exception as ex:
+                logger.error('subprocesses done error for %s' % json.dumps(item.dict()))
+                logger.error(ex)
+                user_action.put_task(item)
+                local_items.append(item)
+            if len(local_items) == 0:
+                continue
+            logger.warning("dummy function to return values")
+            logger.error(local_items)
+
+
+
+def group(index, items, return_dict):
     ''' dummy function to return values '''
     local_items = []
     logger.warning("dummy function to return values")
@@ -384,13 +458,36 @@ def collect(index, items, return_dict):
         for item in items:
             try:
                 AbstractAction.run(item)
+            except WindowsError as we:
+                logger.error('subprocesses done error for %s' % json.dumps(item))
+                logger.error(we)
+                continue
             except Exception as ex:
                 logger.error('subprocesses done error for %s' % json.dumps(item))
+                logger.error(ex)
                 local_items.append(item)
         if len(local_items) > 0:
             return_dict[index] = local_items
         if len(local_items) == 0:
-            break
+            continue
         logger.warning("dummy function to return values")
         logger.error(local_items)
         items = local_items
+
+
+def collect(index, machines, return_dict):
+    ''' dummy function to return values '''
+    local_items = []
+    logger.warning("dummy function to return values")
+    logger.error(local_items)
+    for machine in machines:
+        try:
+            RunAction.run(machine)
+        except Exception as ex:
+            logger.error('subprocesses done error for %s' % json.dumps(machine))
+            logger.error(ex)
+            local_items.append(machine)
+    if len(local_items) > 0:
+        return_dict[index] = local_items
+    logger.warning("dummy function to return values")
+    logger.error(local_items)

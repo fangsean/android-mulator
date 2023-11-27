@@ -1,8 +1,12 @@
+import collections
+from abc import ABC
+from typing import Any, Dict
+
 import pandas as pd
-from sqlalchemy import Column, Integer, String, Table, MetaData
+from sqlalchemy import Column, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm import declarative_base
 
 # 指定数据库路径和引擎
@@ -31,29 +35,40 @@ class User(Base):
     deleted = Column(Integer, default=0)
 
     def dict(self):
-        self.__dict__.pop('_sa_instance_state')
+        if '_sa_instance_state' in self.__dict__:
+            self.__dict__.pop('_sa_instance_state')
         return self.__dict__
 
 
-# Base.metadata.drop_all(bind=engine)
-if not inspector.has_table("users"):
-    # 创建表
-    Base.metadata.create_all(engine)
-    users = pd_txt_library(user_info_file)
+class UserAction:
 
-    # ORM操作
-    with Session(engine) as session:
+    def __init__(self, engine):
+        self.engine = engine
+        self.session_maker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+        self.init_db()
+        self._queue = collections.deque(self.user_all())
+
+    # Base.metadata.drop_all(bind=engine)
+    def init_db(self):
+        if not inspector.has_table("users"):
+            # 创建表
+            Base.metadata.create_all(engine)
+        users = pd_txt_library(user_info_file)
+        # ORM操作
+        session = self.session_maker()
         for index, user in enumerate(users):
             # 插入
-            new_user = User(username=user['username'], password=user['password'])
-            session.add(new_user)
+            username = user['username']
+            password = user['password']
+            users = session.query(User).filter(User.username == username and User.deleted == 0).first()
+            if not users:
+                new_user = User(username=username, password=password)
+                session.add(new_user)
         # 提交变更
-        session.flush()
         session.commit()
 
-
-def user_delete(username):
-    with Session(engine) as session:
+    def user_delete(self, username):
+        session = self.session_maker()
         users = session.query(User).filter(User.username == username and User.deleted == 0).all()
         if len(users):
             for user in users:
@@ -61,11 +76,9 @@ def user_delete(username):
             # 提交事务
             session.add(user)
         session.commit()
-        session.flush()
 
-
-def user_quantity_stage(username):
-    with Session(engine) as session:
+    def user_quantity_stage(self, username):
+        session = self.session_maker()
         result = session.query(User).filter(User.username == username and User.deleted == 0).first()
         if result:
             # 修改数量加1
@@ -73,31 +86,39 @@ def user_quantity_stage(username):
             result.step = 0
             # 提交事务
             session.commit()
-            session.flush()
 
-
-def user_quantity_step(username):
-    with Session(engine) as session:
+    def user_quantity_step(self, username):
+        session = self.session_maker()
         result = session.query(User).filter(User.username == username).first()
         if result:
             # 修改数量加1
             result.step += 1
             # 提交事务
             session.commit()
-            session.flush()
 
-
-def user_query(username):
-    with Session(engine) as session:
+    def user_query(self, username):
+        session = self.session_maker()
         return session.query(User).filter(User.username == username).first()
 
+    def user_all(self):
+        session = self.session_maker()
+        return session.query(User).filter(User.deleted == 0).order_by(User.stage, User.step).all()
 
-def user_all():
-    with Session(engine) as session:
-        return session.query(User).filter(User.deleted == 0).all()
+    def get_task(self):
+        if self._queue:
+            return self._queue.popleft()
+        return None
 
+    def put_task(self, user):
+        if self._queue:
+            self._queue.append(user)
+
+user_action = UserAction(engine)
 
 if __name__ == '__main__':
-    users = user_all()
-    for user in users:
-        print(user.dict())
+    action = UserAction(engine)
+    while True:
+        item = action.get_task()
+        if not item:
+            break
+        print(item.dict())

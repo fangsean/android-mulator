@@ -6,19 +6,6 @@ from logging import getLogger
 LOG = getLogger()
 
 
-def yield_items(items: List[Any], num: int = 10):
-    ''' make chunks of max 10 items from a list of sqs queue items
-
-    Args:
-        items (list): a list with sqs queue items
-        num (int): number of items which should be yielded
-
-    Yield:
-        (generator): a yield generator with chunks of max 10 queue items
-    '''
-    for i in range(0, len(items), num):
-        yield items[i:i + num]
-
 def multiprocessing_collect(items: List[Dict], function: Callable,
                             chunks: int = 10, **kwargs) -> List[Dict]:
     '''
@@ -38,6 +25,19 @@ def multiprocessing_collect(items: List[Dict], function: Callable,
     return_dict = manager.dict()
     item_details = []
     processes = []
+
+    def yield_items(items: List[Any], num: int = 10):
+        ''' make chunks of max 10 items from a list of sqs queue items
+
+        Args:
+            items (list): a list with sqs queue items
+            num (int): number of items which should be yielded
+
+        Yield:
+            (generator): a yield generator with chunks of max 10 queue items
+        '''
+        for i in range(0, len(items), num):
+            yield items[i:i + num]
 
     # Split the list of items into smaller chunks
     chunks = yield_items(items=items, num=chunks)
