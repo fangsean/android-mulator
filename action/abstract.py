@@ -105,6 +105,8 @@ class AbstractAction:
             sleep(2)
             adb.startActivity(component)
             sleep(5)
+            import random
+            sleep(random.random() * 5)
             image_utils = ImageUtils(device_id)
             image_name = image_utils.screenShot()
             image_utils.writeToFile(os.path.join(base_photops, machine), image_name)
@@ -171,20 +173,24 @@ class AbstractAction:
             # 登录
             logger.info('subprocesses done at 登录 for %s in %s' % (username, device_id))
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LOGIN_X, CONTINUOUS_BATTLE_BUTTON_LOGIN_Y)
+            sleep(1)
             # 输入
             logger.info('subprocesses done at 输入用户 for %s in %s' % (username, device_id))
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_USERNAME_CLEAR_X,
                              CONTINUOUS_BATTLE_BUTTON_INPUT_USERNAME_CLEAR_Y)
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_USERNAME_X, CONTINUOUS_BATTLE_BUTTON_INPUT_USERNAME_Y)
             adb.sendText(username)
+            sleep(1)
             logger.info('subprocesses done at 输入密码 for %s in %s' % (username, device_id))
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_PASSWORD_CLEAR_X,
                              CONTINUOUS_BATTLE_BUTTON_INPUT_PASSWORD_CLEAR_Y)
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_PASSWORD_X, CONTINUOUS_BATTLE_BUTTON_INPUT_PASSWORD_Y)
             adb.sendText(password)
+            sleep(1)
             # 向上滑动
             logger.info('subprocesses done at 向上滑动 for %s in %s' % (username, device_id))
             adb.swipeByCoord(CONTINUOUS_BATTLE_SWIPE_START_X, CONTINUOUS_BATTLE_SWIPE_START_Y, 0, 0)
+            sleep(1)
             # 提交
             logger.info('subprocesses done at 提交 for %s in %s' % (username, device_id))
             adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_INPUT_SUBMIT_X, CONTINUOUS_BATTLE_BUTTON_INPUT_SUBMIT_Y)
