@@ -60,10 +60,12 @@ class UserAction:
             # 插入
             username = user['username']
             password = user['password']
-            users = session.query(User).filter(User.username == username and User.deleted == 0).first()
-            if not users:
+            user = session.query(User).filter(User.username == username and User.deleted == 0).first()
+            if not user:
                 new_user = User(username=username, password=password)
                 session.add(new_user)
+            else:
+                user.password = password
         # 提交变更
         session.commit()
 
