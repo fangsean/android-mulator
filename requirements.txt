@@ -11,3 +11,8 @@ pytesseract==0.3.10
 paddlepaddle==2.5.2
 sqlalchemy==4.7.1
 marshmallow==3.20.1
+airtest
+pandas
+sqlalchemy
+pytesseract
+paddleocr

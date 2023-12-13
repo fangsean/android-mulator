@@ -32,7 +32,8 @@ class EventLoopThreadExecutor(object):
             try:
                 loop.run_until_complete(func(*args, **kwargs))
             finally:
-                loop.close()
+                pass
+                # loop.close()
 
         return threading.Thread(target=_worker, args=args, kwargs=kwargs, daemon=True)
 

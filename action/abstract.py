@@ -248,7 +248,7 @@ class AbstractAction:
                     # 点击
                     logger.info('subprocesses done at 新办必学》点击 %s for %s in %s' % (j, username, device_id))
                     adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LIEBIAO_X, CONTINUOUS_BATTLE_BUTTON_LIEBIAO_Y)
-                    adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LIEBIAO_X, CONTINUOUS_BATTLE_BUTTON_LIEBIAO_Y-20)
+                    adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_LIEBIAO_X, CONTINUOUS_BATTLE_BUTTON_LIEBIAO_Y+80)
                     sleep(1)
                     while True:
                         adb.swipeByCoord(0, CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_Y * 2, 0, 0)
@@ -262,7 +262,7 @@ class AbstractAction:
                         words = image_utils.has_words_paddle(os.path.join(base_photops, machine, image_name),
                                                              CONTINUOUS_SCREENCAP_START_X, CONTINUOUS_SCREENCAP_END_X,
                                                              CONTINUOUS_SCREENCAP_START_Y, CONTINUOUS_SCREENCAP_END_Y)
-                        if "已学完100" in words:
+                        if "已学完100" in words or "已学完100%" in words:
                             break
                         logger.info('%s read video ...' % username)
                         adb.swipeByCoord(CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_X,
@@ -272,7 +272,8 @@ class AbstractAction:
                     logger.info('user quantity step %s for %s in %s' % (j, username, device_id))
                     user_action.user_quantity_step(username)
                     logger.info('subprocesses done at 新办必学》点击返回 %s for %s in %s' % (j, username, device_id))
-                    adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_BACK_X, CONTINUOUS_BATTLE_BUTTON_BACK_Y)
+                    adb.sendKeyEvent(BACK)
+                    # adb.touchByRatio(CONTINUOUS_BATTLE_BUTTON_BACK_X, CONTINUOUS_BATTLE_BUTTON_BACK_Y)
                     sleep(1)
                     adb.swipeByCoord(CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_X, CONTINUOUS_BATTLE_SWIPE_LIEBIAO_START_Y,
                                      CONTINUOUS_BATTLE_SWIPE_LIEBIAO_END_X, CONTINUOUS_BATTLE_SWIPE_LIEBIAO_END_Y)
@@ -429,7 +430,6 @@ class RunAction(AbstractAction, ABC):
 
         local_items = []
         logger.warning("dummy function to return values")
-        logger.error(local_items)
         while True:
             item = user_action.get_task()
             if not item:

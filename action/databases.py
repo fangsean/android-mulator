@@ -1,6 +1,9 @@
 import collections
+import random
 from abc import ABC
 from typing import Any, Dict
+import os
+import sys
 
 import pandas as pd
 from sqlalchemy import Column, Integer, String
@@ -9,8 +12,11 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm import declarative_base
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 # 指定数据库路径和引擎
-from config import user_info_file, db_file
+from config import db_file, user_info_file
 
 engine = create_engine('sqlite:///%s' % db_file)
 Base = declarative_base()
@@ -46,6 +52,9 @@ class UserAction:
         self.engine = engine
         self.session_maker = sessionmaker(bind=engine, autocommit=False, autoflush=False)
         self.init_db()
+        # users = self.user_all()
+        # random.shuffle(users)
+        # self._queue = collections.deque(users)
         self._queue = collections.deque(self.user_all())
 
     # Base.metadata.drop_all(bind=engine)
@@ -75,8 +84,8 @@ class UserAction:
         if len(users):
             for user in users:
                 user.deleted = 1
-            # 提交事务
-            session.add(user)
+                # 提交事务
+                session.add(user)
         session.commit()
 
     def user_quantity_stage(self, username):
